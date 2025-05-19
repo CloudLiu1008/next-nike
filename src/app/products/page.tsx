@@ -121,7 +121,7 @@ export default function ProductsPage() {
   ];
 
   // 处理筛选器变化
-  const handleFilterChange = (filterType, value) => {
+  const handleFilterChange = (filterType: keyof typeof filters, value: string) => {
     setFilters(prev => ({
       ...prev,
       [filterType]: value
