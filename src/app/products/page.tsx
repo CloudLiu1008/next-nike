@@ -3,8 +3,22 @@
  */
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import ProductFilter from '@/components/ProductFilter';
+
+// 产品类型定义
+interface Product {
+  id: number;
+  name: string;
+  category: string;
+  price: string;
+  originalPrice: string;
+  discount: boolean;
+  colors: number;
+  image: string;
+  isNew: boolean;
+}
 
 export default function ProductsPage() {
   // 筛选状态
@@ -17,108 +31,38 @@ export default function ProductsPage() {
     sort: ''
   });
 
-  // 模拟产品数据
-  const products = [
-    {
-      id: 1,
-      name: 'Nike Air Force 1 07',
-      category: '男子运动鞋',
-      price: '¥899',
-      originalPrice: '¥999',
-      discount: true,
-      colors: 3,
-      image: '/placeholder-product-1.jpg',
-      isNew: true,
-    },
-    {
-      id: 2,
-      name: 'Nike Dunk Low',
-      category: '女子运动鞋',
-      price: '¥799',
-      originalPrice: '',
-      discount: false,
-      colors: 5,
-      image: '/placeholder-product-2.jpg',
-      isNew: true,
-    },
-    {
-      id: 3,
-      name: 'Nike Air Max 90',
-      category: '男子运动鞋',
-      price: '¥999',
-      originalPrice: '¥1299',
-      discount: true,
-      colors: 2,
-      image: '/placeholder-product-3.jpg',
-      isNew: false,
-    },
-    {
-      id: 4,
-      name: 'Nike Blazer Mid 77',
-      category: '女子运动鞋',
-      price: '¥749',
-      originalPrice: '',
-      discount: false,
-      colors: 4,
-      image: '/placeholder-product-4.jpg',
-      isNew: false,
-    },
-    {
-      id: 5,
-      name: 'Nike Air Zoom Pegasus 39',
-      category: '跑步鞋',
-      price: '¥899',
-      originalPrice: '¥1099',
-      discount: true,
-      colors: 6,
-      image: '/placeholder-product-5.jpg',
-      isNew: true,
-    },
-    {
-      id: 6,
-      name: 'Nike Sportswear Club Fleece',
-      category: '男子卫衣',
-      price: '¥399',
-      originalPrice: '',
-      discount: false,
-      colors: 3,
-      image: '/placeholder-product-6.jpg',
-      isNew: false,
-    },
-    {
-      id: 7,
-      name: 'Nike Dri-FIT ADV Run Division',
-      category: '女子上衣',
-      price: '¥499',
-      originalPrice: '¥599',
-      discount: true,
-      colors: 2,
-      image: '/placeholder-product-7.jpg',
-      isNew: true,
-    },
-    {
-      id: 8,
-      name: 'Nike Air Jordan 1 Mid',
-      category: '男子运动鞋',
-      price: '¥999',
-      originalPrice: '',
-      discount: false,
-      colors: 4,
-      image: '/placeholder-product-8.jpg',
-      isNew: false,
-    },
-    {
-      id: 9,
-      name: 'Nike Therma-FIT Repel',
-      category: '男子夹克',
-      price: '¥799',
-      originalPrice: '¥999',
-      discount: true,
-      colors: 1,
-      image: '/placeholder-product-9.jpg',
-      isNew: false,
-    },
-  ];
+  // 产品状态
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // 获取产品数据
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        // 构建查询参数
+        const queryParams = new URLSearchParams();
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value) queryParams.append(key, value);
+        });
+
+        // 发起API请求
+        const response = await fetch(`/api/products?${queryParams}`);
+        if (!response.ok) {
+          throw new Error('获取产品数据失败');
+        }
+        const data = await response.json();
+        setProducts(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : '发生未知错误');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [filters]);
 
   // 处理筛选器变化
   const handleFilterChange = (filterType: keyof typeof filters, value: string) => {
@@ -128,6 +72,24 @@ export default function ProductsPage() {
     }));
   };
 
+  // 加载状态
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-black" />
+      </div>
+    );
+  }
+
+  // 错误状态
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-red-500">{error}</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -136,91 +98,16 @@ export default function ProductsPage() {
           <p className="text-gray-600">共 {products.length} 件商品</p>
         </div>
         
-        {/* 筛选器和排序区域 */}
-        <div className="mb-8 sticky top-0 bg-white z-10 py-4 border-b border-gray-200">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex flex-wrap gap-3">
-              <select 
-                className="border border-gray-300 rounded-full px-4 py-2 bg-white text-sm"
-                value={filters.gender}
-                onChange={(e) => handleFilterChange('gender', e.target.value)}
-              >
-                <option value="">性别</option>
-                <option value="men">男子</option>
-                <option value="women">女子</option>
-                <option value="kids">儿童</option>
-              </select>
-              
-              <select 
-                className="border border-gray-300 rounded-full px-4 py-2 bg-white text-sm"
-                value={filters.category}
-                onChange={(e) => handleFilterChange('category', e.target.value)}
-              >
-                <option value="">类别</option>
-                <option value="shoes">鞋类</option>
-                <option value="clothing">服装</option>
-                <option value="accessories">配件</option>
-              </select>
-              
-              <select 
-                className="border border-gray-300 rounded-full px-4 py-2 bg-white text-sm"
-                value={filters.priceRange}
-                onChange={(e) => handleFilterChange('priceRange', e.target.value)}
-              >
-                <option value="">价格</option>
-                <option value="0-500">¥500以下</option>
-                <option value="500-1000">¥500 - ¥1000</option>
-                <option value="1000+">¥1000以上</option>
-              </select>
-              
-              <select 
-                className="border border-gray-300 rounded-full px-4 py-2 bg-white text-sm"
-                value={filters.size}
-                onChange={(e) => handleFilterChange('size', e.target.value)}
-              >
-                <option value="">尺码</option>
-                <option value="xs">XS</option>
-                <option value="s">S</option>
-                <option value="m">M</option>
-                <option value="l">L</option>
-                <option value="xl">XL</option>
-                <option value="xxl">XXL</option>
-              </select>
-              
-              <select 
-                className="border border-gray-300 rounded-full px-4 py-2 bg-white text-sm"
-                value={filters.color}
-                onChange={(e) => handleFilterChange('color', e.target.value)}
-              >
-                <option value="">颜色</option>
-                <option value="black">黑色</option>
-                <option value="white">白色</option>
-                <option value="red">红色</option>
-                <option value="blue">蓝色</option>
-                <option value="green">绿色</option>
-              </select>
-            </div>
-            
-            <div>
-              <select 
-                className="border border-gray-300 rounded-full px-4 py-2 bg-white text-sm"
-                value={filters.sort}
-                onChange={(e) => handleFilterChange('sort', e.target.value)}
-              >
-                <option value="">排序方式</option>
-                <option value="featured">精选</option>
-                <option value="newest">最新</option>
-                <option value="price-asc">价格: 从低到高</option>
-                <option value="price-desc">价格: 从高到低</option>
-              </select>
-            </div>
-          </div>
-        </div>
+        <ProductFilter 
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          productCount={products.length}
+        />
         
         {/* 产品网格 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-12">
           {products.map((product) => (
-            <div key={product.id} className="group">
+            <Link key={product.id} href={`/products/${product.id}`} className="group block">
               <div className="bg-gray-100 rounded-lg overflow-hidden aspect-square mb-3 relative">
                 {/* 实际项目中这里应该是产品图片 */}
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -255,7 +142,7 @@ export default function ProductsPage() {
                   )}
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
         

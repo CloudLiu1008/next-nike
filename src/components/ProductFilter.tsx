@@ -14,7 +14,7 @@ type FilterProps = {
     color: string;
     sort: string;
   };
-  onFilterChange: (filterType: string, value: string) => void;
+  onFilterChange: (filterType: keyof FilterProps['filters'], value: string) => void;
   productCount: number;
 };
 

@@ -13,6 +13,8 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   // 控制当前悬停的菜单项（桌面端）
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  // 用于存储定时器ID
+  const [hoverTimer, setHoverTimer] = useState<NodeJS.Timeout | null>(null);
   // 控制移动端展开的子菜单
   const [expandedMobileItem, setExpandedMobileItem] = useState<string | null>(null);
 
@@ -121,8 +123,14 @@ const Header = () => {
               <div 
                 key={item.name}
                 className="relative group"
-                onMouseEnter={() => setHoveredItem(item.name)}
-                onMouseLeave={() => setHoveredItem(null)}
+                onMouseEnter={() => {
+                  if (hoverTimer) clearTimeout(hoverTimer);
+                  setHoveredItem(item.name);
+                }}
+                onMouseLeave={() => {
+                  const timer = setTimeout(() => setHoveredItem(null), 200);
+                  setHoverTimer(timer);
+                }}
               >
                 <Link
                   href={item.href}
@@ -143,11 +151,21 @@ const Header = () => {
                 
                 {/* 下拉菜单 */}
                 {item.subCategories && hoveredItem === item.name && (
-                  <div className="absolute left-0 mt-1 w-56 bg-white shadow-lg rounded-md py-2 z-50 transition-all duration-300 ease-in-out transform opacity-100 scale-100">
+                  <div 
+                    className="absolute left-0 mt-1 w-56 bg-white shadow-lg rounded-md py-2 z-50 transition-all duration-300 ease-in-out transform opacity-100 scale-100"
+                    onMouseEnter={() => {
+                      if (hoverTimer) clearTimeout(hoverTimer);
+                      setHoveredItem(item.name);
+                    }}
+                    onMouseLeave={() => {
+                      const timer = setTimeout(() => setHoveredItem(null), 200);
+                      setHoverTimer(timer);
+                    }}
+                  >
                     {item.subCategories.map((subItem) => (
                       <Link
                         key={subItem.name}
-                        href={subItem.href}
+                        href="/products"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-nike-red"
                       >
                         {subItem.name}
@@ -282,7 +300,7 @@ const Header = () => {
                     {item.subCategories.map((subItem) => (
                       <Link
                         key={subItem.name}
-                        href={subItem.href}
+                        href="/products"
                         className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-nike-red"
                         onClick={() => setMobileMenuOpen(false)}
                       >
