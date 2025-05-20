@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "prisma:seed": "ts-node prisma/seed.ts",
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
@@ -22,6 +23,7 @@
     "@types/react-dom": "^19",
     "prisma": "^6.8.2",
     "tailwindcss": "^4",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
   }
 }

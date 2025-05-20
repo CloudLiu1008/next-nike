@@ -1,4 +1,4 @@
-import { PrismaClient } from '@generated/prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -9,7 +9,7 @@ async function main() {
     console.log('✅ 数据库连接成功');
 
     // 可选：执行简单查询（例如 PostgreSQL 版本）
-    const result = await prisma.$queryRawUnsafe<any>(`SELECT version();`);
+    const result = await prisma.$queryRaw`SELECT version();`;
     console.log('PostgreSQL 版本:', result[0]?.version);
   } catch (error) {
     console.error('❌ 数据库连接失败:', error);
