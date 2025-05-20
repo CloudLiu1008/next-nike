@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import ProductFilter from '@/components/ProductFilter';
+import { log } from 'console';
 
 // 产品类型定义
 interface Product {
@@ -53,6 +54,7 @@ export default function ProductsPage() {
           throw new Error('获取产品数据失败');
         }
         const data = await response.json();
+        console.log(111,data);
         setProducts(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : '发生未知错误');

@@ -23,29 +23,48 @@ model User {
 }
 
 model Product {
-  id          Int       @id @default(autoincrement())
-  name        String    // 产品名称
-  description String    // 产品描述
-  price       Float     // 产品价格
-  images      String[]  // 产品图片URL数组
-  sizes       String[]  // 可用尺码
-  colors      String[]  // 可用颜色
-  stock       Int       // 库存数量
-  category    Category  @relation(fields: [categoryId], references: [id])
-  categoryId  Int       // 分类外键
-  orderItems  OrderItem[] // 订单项关系
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id          Int                @id @default(autoincrement())
+  name        String
+  description String
+  price       Float
+  images      String[]
+  sizes       String[]
+  colors      String[]
+  stock       Int
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  // 多对多关联
+  categories  ProductCategory[]
+  orderItems  OrderItem[]
 }
 
 model Category {
-  id          Int       @id @default(autoincrement())
-  name        String    // 分类名称
-  description String?   // 分类描述
-  products    Product[] // 分类下的产品
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id          Int                @id @default(autoincrement())
+  name        String             @unique
+  description String
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  // 多对多关联
+  products    ProductCategory[]
 }
+
+// 显式中间表：ProductCategory
+model ProductCategory {
+  productId   Int
+  categoryId  Int
+  sortOrder   Int                @default(0) // 在分类中的排序，可选
+  createdAt   DateTime           @default(now())
+
+  product     Product            @relation(fields: [productId], references: [id])
+  category    Category           @relation(fields: [categoryId], references: [id])
+
+  @@id([productId, categoryId])               // 联合主键
+  @@index([productId])
+  @@index([categoryId])
+}
+
 
 model Order {
   id          Int         @id @default(autoincrement())
