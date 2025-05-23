@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import ProductFilter from '@/components/ProductFilter';
-import { log } from 'console';
+import { useSearchParams } from 'next/navigation';
 
 // 产品类型定义
 interface Product {
@@ -22,14 +22,16 @@ interface Product {
 }
 
 export default function ProductsPage() {
+  const searchParams = useSearchParams();
+  
   // 筛选状态
   const [filters, setFilters] = useState({
-    category: '',
-    gender: '',
-    priceRange: '',
-    size: '',
-    color: '',
-    sort: ''
+    category: searchParams.get('category') || '',
+    gender: searchParams.get('gender') || '',
+    priceRange: searchParams.get('priceRange') || '',
+    size: searchParams.get('size') || '',
+    color: searchParams.get('color') || '',
+    sort: searchParams.get('sort') || ''
   });
 
   // 产品状态

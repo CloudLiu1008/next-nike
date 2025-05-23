@@ -22,48 +22,47 @@ model User {
   updatedAt DateTime @updatedAt
 }
 
+model Category {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  menus     Menu[]   // 添加与菜单的关系
+  description String? // 添加描述字段，设为可选
+  parentId  Int?     // 父分类ID，用于构建层级关系
+  order     Int      @default(0) // 排序顺序
+  isActive  Boolean  @default(true)
+  parent    Category? @relation("CategoryToCategory", fields: [parentId], references: [id])
+  children  Category[] @relation("CategoryToCategory")
+  products  ProductCategory[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Product {
-  id          Int                @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   name        String
   description String
   price       Float
-  images      String[]
-  sizes       String[]
-  colors      String[]
+  images      String[]  // PostgreSQL 支持
+  sizes       String[]  // 可用于电商 SKU 显示
+  colors      String[]  // 可用于前端渲染不同配色
   stock       Int
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-
-  // 多对多关联
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   categories  ProductCategory[]
-  orderItems  OrderItem[]
+  orderItems  OrderItem[] 
 }
 
-model Category {
-  id          Int                @id @default(autoincrement())
-  name        String             @unique
-  description String
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-
-  // 多对多关联
-  products    ProductCategory[]
-}
-
-// 显式中间表：ProductCategory
 model ProductCategory {
-  productId   Int
-  categoryId  Int
-  sortOrder   Int                @default(0) // 在分类中的排序，可选
-  createdAt   DateTime           @default(now())
+  id         Int      @id @default(autoincrement())
+  productId  Int
+  categoryId Int
+  product    Product  @relation(fields: [productId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id])
 
-  product     Product            @relation(fields: [productId], references: [id])
-  category    Category           @relation(fields: [categoryId], references: [id])
-
-  @@id([productId, categoryId])               // 联合主键
-  @@index([productId])
-  @@index([categoryId])
+  @@unique([productId, categoryId])  // 避免重复关联
 }
+
+
 
 
 model Order {
@@ -89,4 +88,19 @@ model OrderItem {
   color     String   // 选择的颜色
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Menu {
+  id        Int       @id @default(autoincrement())
+  name      String    // 菜单名称
+  path      String    // 菜单路径
+  parentId  Int?      // 父菜单ID
+  order     Int       @default(0) // 排序顺序
+  isActive  Boolean   @default(true)
+  parent    Menu?     @relation("MenuToMenu", fields: [parentId], references: [id])
+  children  Menu[]    @relation("MenuToMenu")
+  categoryId Int?     // 关联的分类ID，可选
+  category  Category? @relation(fields: [categoryId], references: [id])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
